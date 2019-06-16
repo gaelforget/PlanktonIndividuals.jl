@@ -7,12 +7,13 @@ Cmin  = 5.0e-13              # Minimum C quota (mmolC)
 dvdcount = 0
 α = 0.030                    # Irradiance absorption coeff (m^2/gChl)
 katten_w = 0.046             # PAR attenuation (/m)
-katten_c = 4.2e-5              # PAR attenuation (/chl/m)
+katten_c = 4.2e-6              # PAR attenuation (/chl/m)
 Cquota = [1.8e-11, 1.8e-10]  # Average C quota in cell (mmolC).
 Grz_P  = 2000                # phyt.size/Grz_P is the probability to be grazed
-dvid_size = 0.7              # relative cell size a cell can start divide
+dvid_size = 0.5              # relative cell size a cell can start divide
 a_dvi = [0.15, 0.15]         # shape parameter for division probability
 b_dvi = [2.3, 2.3]           # shape parameter for division probability
+Dor_P = 0.1                  # paobability for a cell to do nothing in a time step
 
 Tempref = 293.15   # reference temperature in K
 TempAe = -4000.0   # Arrenhius equation
