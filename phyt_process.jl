@@ -88,12 +88,14 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
     #
     for i in 1:size(phyts_a,1)
         phyt = phyts_a[i,:]
+        sp = phyt.sp
         z = trunc(Int, phyt.z); x = trunc(Int, phyt.x); y = trunc(Int, phyt.y);
         DIN = max(0.0, nutrients.DIN[x, y, z])
         #compute probabilities of grazing and division
         P_graz = rand(Bernoulli(exp(Num_phyt/N*Nsp)*phyt.size/Grz_P))
         # Hypothesis: the population of grazers is large enough to graze on phytoplanktons
-        P_dvi=max(0.0,phyt.size-dvid_size)*1.0e5*rand(Bernoulli(phyt.size/Dvid_P))
+        reg_size = max(0.0, phyt.size-dvid_size)
+        P_dvi=rand(Bernoulli((a_dvi[sp]*reg_size)^b_dvi[sp]/(1+(a_dvi[sp]*reg_size)^b_dvi[sp]))) 
         PAR = PAR_cal(IR[trunc(Int,t*ΔT/3600)], g.zF[z], cumsum_chl[x, y, z])
         PP = PC(PAR,temp[trunc(Int,t*ΔT/3600)],phyt)*phyt.Cq2*ΔT
         VN = min(DIN*g.V[x,y,z]/10.0,Nuptake(DIN,phyt)*phyt.Cq2*ΔT)

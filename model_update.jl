@@ -65,7 +65,7 @@ B=setup_agents(N,Cquota,Nn,1.1,0.18,g) # Normal distribution with mean and varia
 # model initialization
 # create output file
 output = create_output(B);
-nut = [2.0, 0.05, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
+nut = [2.0, 0.10, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
 nutrients= setup_nutrients(g,nut)
 remin = rem(kDOC,kDON,kPOC,kPON);
 
