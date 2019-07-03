@@ -67,7 +67,7 @@ function agent_move(phyts_a,velᵈ,g,ΔT::Int64)
         xi, yi, zi = trunc(Int,phyt.x), trunc(Int,phyt.y), trunc(Int,phyt.z)
         dx = uvel/g.Lx[xi]*ΔT # unit: grid/h
         dy = vvel/g.Ly[yi]*ΔT # unit: grid/h
-        dz = wvel/g.Lz[zi]*ΔT # vertical movement, unit: grid/h
+        dz = (wvel+k_sink)/g.Lz[zi]*ΔT # vertical movement, plus sinking, unit: grid/h
 #       phyt.x = max(1.5,min(g.Nx-0.5,phyt.x - dx*(1+rand()/5)))
 #       phyt.y = max(1.5,min(g.Ny-0.5,phyt.y - dy*(1+rand()/5)))
         phyt.x = phyt.x - dx*(1+rand()/3)
