@@ -91,7 +91,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
         sp = phyt.sp
         z = trunc(Int, phyt.z); x = trunc(Int, phyt.x); y = trunc(Int, phyt.y);
         DIN = max(0.0, nutrients.DIN[x, y, z])
-        # Probablity for a cell to do nothing in a time step.
+        # Probability for a cell to do nothing in a time step.
         P_dormant = rand(Bernoulli(Dor_P))
         # compute probabilities of grazing and division
         P_graz = rand(Bernoulli(exp(Num_phyt/N*Nsp)*phyt.size/Grz_P))

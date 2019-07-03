@@ -122,6 +122,7 @@ function count_chl(phyts_a, grid)
         z = trunc(Int, phyt.z)
         cells[x, y, z] = cells[x, y, z] + phyt.chl
     end
+    cells .= cells ./ g.V
     return cells
 end
 

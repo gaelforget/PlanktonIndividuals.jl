@@ -17,16 +17,15 @@
 using DataFrames, NetCDF, Printf, CSV, Serialization
 using Random
 using Distributions
-cd("/nobackup1b/users/zhenwu/ABPM_3D/")
-include("parameters.jl")
-include("model_setup.jl")
-include("model_struct.jl")
-include("phyt_process.jl")
-include("utils.jl")
-include("agent_div.jl")
-include("dst3fl.jl")
-include("nutrient_processes.jl")
-include("2nd_adv_diffu.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/parameters.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/model_setup.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/model_struct.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/phyt_process.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/utils.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/agent_div.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/dst3fl.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/nutrient_processes.jl")
+include("/nobackup1b/users/zhenwu/ABPM_3D/2nd_adv_diffu.jl")
 # remove old files
 isfile("results/cons_C.txt") && rm("results/cons_C.txt");
 isfile("results/cons_N.txt") && rm("results/cons_N.txt");
@@ -45,7 +44,7 @@ isfile("results/HD2.bin") && rm("results/HD2.bin");
 # Read input files
 nTime = 240 # number of time steps
 ΔT = 3600 # time step: 3600 for 1 hour
-temp,IR = read_input("T_IR.csv",trunc(Int,nTime*ΔT/3600));
+temp,IR = read_input("/nobackup1b/users/zhenwu/ABPM_3D/T_IR.csv",trunc(Int,nTime*ΔT/3600));
 
 # grid selected : [251:750,1251:1800]: 27.3242N to 36.2605N, 167.802W to 157.406W
 fieldroot = "/nobackup1b/users/jahn/hinpac/grazsame3/run/run.0354/";
@@ -65,9 +64,9 @@ B=setup_agents(N,Cquota,Nn,1.1,0.18,g) # Normal distribution with mean and varia
 # model initialization
 # create output file
 output = create_output(B);
-nut = [2.0, 0.04, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
+nut = [2.0, 0.005, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
 nutrients= setup_nutrients(g,nut)
-remin = rem(kDOC,kDON,kPOC,kPON);
+remin = remineralization(kDOC,kDON,kPOC,kPON);
 
 for t in 1:nTime
     phyts_a = copy(B[t]) # read data from last time step
