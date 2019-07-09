@@ -4,7 +4,7 @@ function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float6
     for i in 1:N
         # agent location
         x = rand(30*grid.Nx:70*grid.Nx)/100
-        y = rand(30*grid.Nx:grid.Ny*70)/100
+        y = rand(30*grid.Ny:grid.Ny*70)/100
         z = rand(3.5*10:grid.Nz*8)/10
         # a normal distribution with mean variance
         radm = max(0.05, rand(Normal(mean,var)))

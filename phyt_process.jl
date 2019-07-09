@@ -31,7 +31,7 @@ function Nuptake(Nit, phyt)
     #In-Cell N uptake limitation
     regQ = max(0.0,min(1.0,(Nqmax-Qn)/(Nqmax-Nqmin)))
     VNm = VNmax[phyt.sp]*phyt.size^VN_b[phyt.sp]
-    Nuptake = VNm*Nit/(Nit+KsatN)*regQ
+    Nuptake = VNm*Nit/(Nit+KsatN[phyt.sp])*regQ
     return Nuptake
 end
 
