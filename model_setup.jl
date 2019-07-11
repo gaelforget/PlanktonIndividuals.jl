@@ -1,10 +1,10 @@
 # set up a series of agents following a normal distribution
 function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float64,grid)
-    phyts0 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[], sp=Int64[])
+    phyts0 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[], sp=Int64[], age=[])
     for i in 1:N
         # agent location
         x = rand(30*grid.Nx:70*grid.Nx)/100
-        y = rand(30*grid.Nx:grid.Ny*70)/100
+        y = rand(30*grid.Ny:grid.Ny*70)/100
         z = rand(3.5*10:grid.Nz*8)/10
         # a normal distribution with mean variance
         radm = max(0.05, rand(Normal(mean,var)))
@@ -15,7 +15,8 @@ function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float6
         Nq   = 13/106*2*Cq2
         chl  = Cq2*0.4 # mgChl(/mmolC)
         sp   = 1
-        push!(phyts0,(x=x,y=y,z=z,gen=gen,size=size,Cq1=Cq1,Cq2=Cq2,Nq=Nq,chl=chl,sp=sp))
+        age  = 1.0
+        push!(phyts0,(x=x,y=y,z=z,gen=gen,size=size,Cq1=Cq1,Cq2=Cq2,Nq=Nq,chl=chl,sp=sp,age=age))
     end
     for i in N+1:2N
         # agent location
@@ -31,7 +32,8 @@ function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float6
         Nq   = 13/106*2*Cq2
         chl  = Cq2*0.4 # mgChl(/mmolC)
         sp   = 2
-        push!(phyts0,(x=x,y=y,z=z,gen=gen,size=size,Cq1=Cq1,Cq2=Cq2,Nq=Nq,chl=chl,sp=sp))
+        age  = 1.0
+        push!(phyts0,(x=x,y=y,z=z,gen=gen,size=size,Cq1=Cq1,Cq2=Cq2,Nq=Nq,chl=chl,sp=sp,age=age))
     end
     B = [phyts0]
     return B

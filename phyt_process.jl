@@ -45,7 +45,7 @@ function chl_sync(phyt,PP,I)
 end
 
 function divide(phyt::DataFrameRow)
-    phytops = DataFrame(x=Float64[0.0,0.0], y=Float64[0.0,0.0], z=Float64[0.0,0.0], gen=Int64[1,1], size=Float64[0.0,0.0], Cq1=Float64[0.0,0.0], Cq2=Float64[0.0,0.0], Nq=Float64[0.0,0.0], chl=Float64[0.0,0.0], sp=Int64[0,0])  # initialize new cell
+    phytops = DataFrame(x=Float64[0.0,0.0], y=Float64[0.0,0.0], z=Float64[0.0,0.0], gen=Int64[1,1], size=Float64[0.0,0.0], Cq1=Float64[0.0,0.0], Cq2=Float64[0.0,0.0], Nq=Float64[0.0,0.0], chl=Float64[0.0,0.0], sp=Int64[0,0], age=Float64[0.0,0.0])  # initialize new cell
     # NOT all C and N can turn into new cells
     phytops[1,:].x = phyt.x
     phytops[1,:].y = phyt.y
@@ -57,6 +57,7 @@ function divide(phyt::DataFrameRow)
     phytops[1,:].size= phyt.size* 0.5
     phytops[1,:].chl = phyt.chl * 0.5
     phytops[1,:].sp = phyt.sp
+    phytops[1,:].age = 1.0
 
     phytops[2,:].x = phyt.x
     phytops[2,:].y = phyt.y
@@ -68,6 +69,7 @@ function divide(phyt::DataFrameRow)
     phytops[2,:].size= phyt.size* 0.5
     phytops[2,:].chl = phyt.chl * 0.5
     phytops[2,:].sp = phyt.sp
+    phytops[2,:].age = 1.0
 
     return phytops
 end
@@ -81,7 +83,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
     chl_num = count_chl(phyts_a, g)
     cumsum_chl = cumsum(chl_num, dims = 3)
     #set up a dataframe to record all updated agents
-    phyts_b = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[], sp=Int64[])
+    phyts_b = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[], sp=Int64[], age=Float64[])
     #
     consume = nutrient_fields(zeros(g.Nx, g.Ny, g.Nz), zeros(g.Nx, g.Ny, g.Nz), zeros(g.Nx, g.Ny, g.Nz), zeros(g.Nx, g.Ny, g.Nz), zeros(g.Nx, g.Ny, g.Nz), zeros(g.Nx, g.Ny, g.Nz))
     # iterate phytoplankton agents
@@ -102,7 +104,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
         PP = PC(PAR,temp[trunc(Int,t*ΔT/3600)],phyt)*phyt.Cq2*ΔT
         VN = min(DIN*g.V[x,y,z]/10.0,Nuptake(DIN,phyt)*phyt.Cq2*ΔT)
         Dmd_NC = (1+respir_extra(phyt.Cq1))*VN/R_NC
-        Res2 = k_respir(phyt.size)*phyt.Cq2*ΔT
+        Res = k_respir(phyt.size)*phyt.Cq2*ΔT
         ρ_chl = chl_sync(phyt,PC(PAR,temp[trunc(Int,t*ΔT/3600)],phyt),IR[trunc(Int,t*ΔT/3600)])
         if P_graz == false #not grazed
             if P_dormant == false # not dormant
@@ -118,7 +120,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                         VN   = SynC*R_NC
                     end #exudation
                     dCq1 = PP - CostC - ExuC
-                    dCq2 = SynC - Res2
+                    dCq2 = SynC - Res
                     dNq  = VN
                     dsize= dCq2/phyt.Cq2
                     phyt.Cq1 = max(Cmin*Nn/10.0, phyt.Cq1 + dCq1)
@@ -126,6 +128,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                     phyt.Nq  = max(Cmin*Nn*R_NC/10.0, phyt.Nq + dNq)
                     phyt.size= max(0.0,phyt.size+dsize)
                     phyt.chl = phyt.chl + ρ_chl*VN*Chl2N
+                    phyt.age = phyt.age + 1.0*(ΔT/3600)
                     if (phyt.Cq2+phyt.Cq1 ≥ Cmin*Nn) & (phyt.size > 0) # not natural death
                         if P_dvi < 1 # not divide
                             push!(phyts_b,phyt)
@@ -143,7 +146,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                         consume.PON[x, y, z] = consume.PON[x, y, z] + phyt.Nq*(1.0 - mortFracN)
                         death_ct += 1
                     end # naturan death
-                    consume.DIC[x, y, z] = consume.DIC[x, y, z] + Res2 + CostC - SynC
+                    consume.DIC[x, y, z] = consume.DIC[x, y, z] + Res + CostC - SynC
                     consume.DIN[x, y, z] = consume.DIN[x, y, z] - VN
                     consume.DOC[x, y, z] = consume.DOC[x, y, z] + ExuC
                 else # night
@@ -152,7 +155,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                     ExuC = 0.0
                     VN   = SynC*R_NC
                     dCq1 = PP - CostC - ExuC
-                    dCq2 = SynC - Res2
+                    dCq2 = SynC - Res
                     dNq  = VN
                     dsize= dCq2/phyt.Cq2
                     phyt.Cq1 = max(Cmin*Nn/10.0,phyt.Cq1 + dCq1)
@@ -160,6 +163,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                     phyt.Nq  = max(Cmin*Nn*R_NC/10.0,phyt.Nq + dNq)
                     phyt.size= max(0.0,phyt.size+dsize)
                     phyt.chl = phyt.chl + ρ_chl*VN*Chl2N
+                    phyt.age = phyt.age + 1.0*(ΔT/3600)
                     if (phyt.Cq2+phyt.Cq1 ≥ Cmin*Nn) & (phyt.size > 0) # not natural death
                         if P_dvi < 1 # not divide
                             push!(phyts_b,phyt)
@@ -177,11 +181,12 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                         consume.PON[x, y, z] = consume.PON[x, y, z] + phyt.Nq*(1.0 - mortFracN)
                         death_ct += 1
                     end # natural death
-                    consume.DIC[x, y, z] = consume.DIC[x, y, z] + Res2 + CostC - SynC
+                    consume.DIC[x, y, z] = consume.DIC[x, y, z] + Res + CostC - SynC
                     consume.DIN[x, y, z] = consume.DIN[x, y, z] - VN
                     consume.DOC[x, y, z] = consume.DOC[x, y, z] + ExuC
                 end # day night?
             else # dormant, do nothing in this time step
+                phyt.age = phyt.age + 1.0*(ΔT/3600)
                 push!(phyts_b,phyt)
             end # dormant
         else #grazed

@@ -96,7 +96,7 @@ function grid_offline(fieldroot::String)
 end
 
 function create_output(B::Array{DataFrame,1})
-    output = DataFrame(time=0, gen_ave=mean(B[1].gen), spec_ave = mean(B[1].sp), Cq1_ave=mean(B[1].Cq1), Cq2_ave=mean(B[1].Cq2), Nq_ave=mean(B[1].Nq), size_ave=mean(B[1].size), chl_ave=mean(B[1].chl), Population=size(B[1],1), dvid=0, graz=0,death=0)
+    output = DataFrame(time=0, gen_ave=mean(B[1].gen), spec_ave = mean(B[1].sp), Cq1_ave=mean(B[1].Cq1), Cq2_ave=mean(B[1].Cq2), Nq_ave=mean(B[1].Nq), size_ave=mean(B[1].size), chl_ave=mean(B[1].chl), Population=size(B[1],1), age_ave=mean(B[1].age), dvid=0, graz=0,death=0)
     return output
 end
 
@@ -109,7 +109,8 @@ function write_output(t,phyts_b,dvid_ct,graz_ct,death_ct,output)
     Nq_ave=mean(phyts_b.Nq)
     size_ave=mean(phyts_b.size)
     chl_ave=mean(phyts_b.chl)
-    push!(output,(time=t, gen_ave=gen_ave, spec_ave=spec_ave, Cq1_ave=Cq1_ave, Cq2_ave=Cq2_ave, Nq_ave=Nq_ave, size_ave=size_ave, chl_ave=chl_ave, Population=size(phyts_b,1), dvid=dvid_ct, graz=graz_ct, death=death_ct))
+    age_ave=mean(phyts_b.age)
+    push!(output,(time=t, gen_ave=gen_ave, spec_ave=spec_ave, Cq1_ave=Cq1_ave, Cq2_ave=Cq2_ave, Nq_ave=Nq_ave, size_ave=size_ave, chl_ave=chl_ave, Population=size(phyts_b,1), age_ave=age_ave, dvid=dvid_ct, graz=graz_ct, death=death_ct))
     return output
 end
 
@@ -159,8 +160,8 @@ function convert_coordinates(phyts, grid)
 end
 
 function sort_species(Bi, B1, B2)
-    phyts1 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[],sp=Int64[])
-    phyts2 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[],sp=Int64[])
+    phyts1 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[],sp=Int64[],age=Float64[])
+    phyts2 = DataFrame(x=Float64[], y=Float64[], z=Float64[], gen=Int64[], size=Float64[], Cq1=Float64[], Cq2=Float64[], Nq=Float64[], chl=Float64[],sp=Int64[],age=Float64[])
     for j in 1:size(Bi,1)
         if Bi[j,:].sp == 1
             push!(phyts1,Bi[j,:])
@@ -173,8 +174,8 @@ function sort_species(Bi, B1, B2)
 end
     
 function compute_mean_species(B1, B2, nTime)
-    output1 = DataFrame(time=Int64[], gen_ave=Float64[], Cq1_ave=Float64[], Cq2_ave=Float64[], Nq_ave=Float64[], size_ave=Float64[], chl_ave=Float64[], Population=Int64[]);
-    output2 = DataFrame(time=Int64[], gen_ave=Float64[], Cq1_ave=Float64[], Cq2_ave=Float64[], Nq_ave=Float64[], size_ave=Float64[], chl_ave=Float64[], Population=Int64[]);
+    output1 = DataFrame(time=Int64[], gen_ave=Float64[], Cq1_ave=Float64[], Cq2_ave=Float64[], Nq_ave=Float64[], size_ave=Float64[], chl_ave=Float64[], Population=Int64[], age_ave=Float64[]);
+    output2 = DataFrame(time=Int64[], gen_ave=Float64[], Cq1_ave=Float64[], Cq2_ave=Float64[], Nq_ave=Float64[], size_ave=Float64[], chl_ave=Float64[], Population=Int64[], age_ave=Float64[]);
     for i in 1:nTime
         gen_ave1=mean(B1[i].gen)
         Cq1_ave1=mean(B1[i].Cq1)
@@ -182,14 +183,16 @@ function compute_mean_species(B1, B2, nTime)
         Nq_ave1=mean(B1[i].Nq)
         size_ave1=mean(B1[i].size)
         chl_ave1=mean(B1[i].chl)
-        push!(output1,(time=i, gen_ave=gen_ave1, Cq1_ave=Cq1_ave1, Cq2_ave=Cq2_ave1, Nq_ave=Nq_ave1, size_ave=size_ave1, chl_ave=chl_ave1, Population=size(B1[i],1)))
+        age_ave1=mean(B1[i].age)
+        push!(output1,(time=i, gen_ave=gen_ave1, Cq1_ave=Cq1_ave1, Cq2_ave=Cq2_ave1, Nq_ave=Nq_ave1, size_ave=size_ave1, chl_ave=chl_ave1, Population=size(B1[i],1),age_ave=age_ave1))
         gen_ave2=mean(B2[i].gen)
         Cq1_ave2=mean(B2[i].Cq1)
         Cq2_ave2=mean(B2[i].Cq2)
         Nq_ave2=mean(B2[i].Nq)
         size_ave2=mean(B2[i].size)
         chl_ave2=mean(B2[i].chl)
-        push!(output2,(time=i, gen_ave=gen_ave2, Cq1_ave=Cq1_ave2, Cq2_ave=Cq2_ave2, Nq_ave=Nq_ave2, size_ave=size_ave2, chl_ave=chl_ave2, Population=size(B2[i],1)))
+        age_ave2=mean(B2[i].age)
+        push!(output2,(time=i, gen_ave=gen_ave2, Cq1_ave=Cq1_ave2, Cq2_ave=Cq2_ave2, Nq_ave=Nq_ave2, size_ave=size_ave2, chl_ave=chl_ave2, Population=size(B2[i],1),age_ave=age_ave1))
     end
     return output1, output2
 end
