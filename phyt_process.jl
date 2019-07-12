@@ -182,6 +182,10 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
                     consume.DOC[x, y, z] = consume.DOC[x, y, z] + ExuC
                 end # day night?
             else # dormant, do nothing in this time step
+                dCq2 = SynC - Res2
+                dsize= dCq2/phyt.Cq2
+                phyt.Cq2 = max(Cmin*Nn/10.0,phyt.Cq2 + dCq2)
+                phyt.size= max(0.0,phyt.size+dsize)
                 push!(phyts_b,phyt)
             end # dormant
         else #grazed
