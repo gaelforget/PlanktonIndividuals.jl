@@ -12,7 +12,7 @@ function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float6
         size = radm
         Cq1  = Cquota[1]*Nn # Nn is the number of cells one super agent repersents
         Cq2  = Cquota[1]*Nn*radm
-        Nq   = 13/106*2*Cq2
+        Nq   = 13/106*Cq2
         chl  = Cq2*0.4 # mgChl(/mmolC)
         sp   = 1
         age  = 1.0
@@ -29,7 +29,7 @@ function setup_agents(N::Int64,Cquota::Array,Nn::Int64,mean::Float64,var::Float6
         size = radm
         Cq1  = Cquota[2]*Nn
         Cq2  = Cquota[2]*Nn*radm
-        Nq   = 13/106*2*Cq2
+        Nq   = 13/106*Cq2
         chl  = Cq2*0.4 # mgChl(/mmolC)
         sp   = 2
         age  = 1.0
