@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -13,7 +13,6 @@
 #     language: julia
 #     name: julia-1.1
 # ---
-
 using DataFrames, NetCDF, Printf, CSV, Serialization
 using Random
 using Distributions
@@ -36,13 +35,12 @@ isfile("results/output.bin") && rm("results/output.bin");
 isfile("results/output1.bin") && rm("results/output1.bin");
 isfile("results/output2.bin") && rm("results/output2.bin");
 isfile("results/grid.bin") && rm("results/grid.bin");
-isfile("results/IR.bin") && rm("results/IR.bin");
 isfile("results/VD1.bin") && rm("results/VD1.bin");
 isfile("results/VD2.bin") && rm("results/VD2.bin");
 isfile("results/HD1.bin") && rm("results/HD1.bin");
 isfile("results/HD2.bin") && rm("results/HD2.bin");
 # Read input files
-nTime = 240 # number of time steps
+nTime = 360 # number of time steps
 ΔT = 3600 # time step: 3600 for 1 hour
 temp,IR = read_input("/nobackup1b/users/zhenwu/ABPM_3D/T_IR.csv",trunc(Int,nTime*ΔT/3600));
 
@@ -60,11 +58,11 @@ vfroot = "/nobackup1b/users/jahn/hinpac/grazsame3/run/run.0354/offline-0604/"; #
 N = 100000   # Number of initial individuals of each species
 Nsp = 2     # Number of species
 Nn = Int(1e15)   # Number of cells one super-agent represents
-B=setup_agents(N,Cquota,Nn,1.1,0.18,g) # Normal distribution with mean and variance
+B=setup_agents(N,Cquota,Nn,1.0,0.25,g) # Normal distribution with mean and variance
 # model initialization
 # create output file
 output = create_output(B);
-nut = [2.0, 0.015, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
+nut = [2.0, 0.100, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
 nutrients= setup_nutrients(g,nut)
 remin = remineralization(kDOC,kDON,kPOC,kPON);
 
@@ -81,7 +79,7 @@ for t in 1:nTime
     gtr = compute_source_term(nutrients, velᵇ, g, F)
     nutₜ = nut_update(nutrients, consume, g, gtr, ΔT)
     write_nut_nc(g, nutₜ, t)
-    write_nut_cons(g, gtr, nutₜ, velᵇ, agent_num, t)
+    write_nut_cons(g, gtr, nutₜ, velᵇ, agent_num, t, death_ct, graz_ct)
     global nutrients = nutₜ;
 end
 
@@ -143,7 +141,4 @@ open("results/HD1.bin", "w") do io
 end
 open("results/HD2.bin", "w") do io
     serialize(io, HD2)
-end
-open("results/IR.bin", "w") do io
-    serialize(io, IR)
 end

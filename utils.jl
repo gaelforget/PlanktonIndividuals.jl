@@ -27,7 +27,7 @@ function read_offline_vels(vfroot::String,itList,tN,t::Int64)
     vvel = reshape(vvel, 1080, 2700, 90);
     wvel = reshape(wvel, 1080, 2700, 90);
     # seletc grids
-    u = uvel[251:750,1251:1800,1:40]; v = vvel[251:750,1251:1800,1:40]; w = wvel[251:750,1251:1800,1:40];
+    u = uvel[551:650,1501:1600,1:40]; v = vvel[551:650,1501:1600,1:40]; w = wvel[551:650,1501:1600,1:40];
     vel = velocity(u, v, w)
     return vel
 end
@@ -82,14 +82,14 @@ function grid_offline(fieldroot::String)
             end
         end
     end
-    # seletc grids 29.0047N to 32.2864N, 161.563W to 157.417W
-    xcS = xc[251:750,1251:1800]; ycS = yc[251:750,1251:1800];
-    xfS = xf[251:750,1251:1800]; yfS = yf[251:750,1251:1800];
-    dxS = dx[251:750,1251:1800]; dyS = dy[251:750,1251:1800];
-    dxcS= dxc[251:750,1251:1800];dycS= dyc[251:750,1251:1800];
-    ΔxS = Δx[251:750,1251:1800]; ΔyS = Δy[251:750,1251:1800];
-    AzS = Az[251:750,1251:1800]; AxS = Ax[251:750,1251:1800,:];
-    AyS = Ay[251:750,1251:1800,:];VS = V[251:750,1251:1800,:];
+    # seletc grids 
+    xcS = xc[551:650,1501:1600]; ycS = yc[551:650,1501:1600];
+    xfS = xf[551:650,1501:1600]; yfS = yf[551:650,1501:1600];
+    dxS = dx[551:650,1501:1600]; dyS = dy[551:650,1501:1600];
+    dxcS= dxc[551:650,1501:1600];dycS= dyc[551:650,1501:1600];
+    ΔxS = Δx[551:650,1501:1600]; ΔyS = Δy[551:650,1501:1600];
+    AzS = Az[551:650,1501:1600]; AxS = Ax[551:650,1501:1600,:];
+    AyS = Ay[551:650,1501:1600,:];VS = V[551:650,1501:1600,:];
     Nx, Ny = size(AzS)
     g = grids(xcS, ycS, zc, xfS, yfS, zf, ΔxS, ΔyS, dxS, dyS, drf, dxcS, dycS, drc, AxS, AyS, AzS, VS, Nx, Ny, nz)
     return g
@@ -192,7 +192,7 @@ function compute_mean_species(B1, B2, nTime)
         size_ave2=mean(B2[i].size)
         chl_ave2=mean(B2[i].chl)
         age_ave2=mean(B2[i].age)
-        push!(output2,(time=i, gen_ave=gen_ave2, Cq1_ave=Cq1_ave2, Cq2_ave=Cq2_ave2, Nq_ave=Nq_ave2, size_ave=size_ave2, chl_ave=chl_ave2, Population=size(B2[i],1),age_ave=age_ave1))
+        push!(output2,(time=i, gen_ave=gen_ave2, Cq1_ave=Cq1_ave2, Cq2_ave=Cq2_ave2, Nq_ave=Nq_ave2, size_ave=size_ave2, chl_ave=chl_ave2, Population=size(B2[i],1),age_ave=age_ave2))
     end
     return output1, output2
 end
@@ -216,7 +216,7 @@ function write_nut_nc(g::grids, nut::nutrient_fields, t::Int64)
     ncclose(filepath)
     return nothing
 end
-function write_nut_cons(g::grids, gtr::nutrient_fields, nutₜ::nutrient_fields, vel::velocity, agent_num::Int64, t::Int64)
+function write_nut_cons(g::grids, gtr::nutrient_fields, nutₜ::nutrient_fields, vel::velocity, agent_num::Int64, t::Int64, death_ct::Int64, graz_ct::Int64)
     Σgtrⁿ = sum(gtr.DIN .* g.V)+sum(gtr.DON .* g.V)+sum(gtr.PON .* g.V)
     Σgtrᶜ = sum(gtr.DIC .* g.V)+sum(gtr.DOC .* g.V)+sum(gtr.POC .* g.V)
     ΣsurFⁿ= sum((nutₜ.DIN[:,:,1]+nutₜ.DON[:,:,1]+nutₜ.PON[:,:,1]) .* g.Az .* vel.w[:,:,1])
@@ -226,6 +226,6 @@ function write_nut_cons(g::grids, gtr::nutrient_fields, nutₜ::nutrient_fields,
     DINio = open("results/cons_DIN.txt","a");
     println(Cio,@sprintf("%3.0f  %.16E  %.16E  %.8E",t,Σgtrᶜ,ΣsurFᶜ,Σgtrᶜ+ΣsurFᶜ))
     println(Nio,@sprintf("%3.0f  %.16E  %.16E  %.8E",t,Σgtrⁿ,ΣsurFⁿ,Σgtrⁿ+ΣsurFⁿ))
-    println(DINio,@sprintf("%3.0f  %.16E %7.0f",t,ΣDIN,agent_num))
+    println(DINio,@sprintf("%3.0f  %.16E %7.0f %5.0f %5.0f",t,ΣDIN,agent_num,death_ct,graz_ct))
     close(Cio);close(Nio);close(DINio);
 end

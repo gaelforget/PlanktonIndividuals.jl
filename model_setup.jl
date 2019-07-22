@@ -48,17 +48,9 @@ function setup_nutrients(g,nut)
     DON = zeros(g.Nx, g.Ny, g.Nz)
     POC = zeros(g.Nx, g.Ny, g.Nz)
     PON = zeros(g.Nx, g.Ny, g.Nz)
-    for i in trunc(Int,0.25*g.Nx):trunc(Int,0.75*g.Nx)
-        for j in trunc(Int,0.25*g.Ny):trunc(Int,0.75*g.Ny)
-            for k in 1:Int(0.625*g.Nz)
-                DIC[i, j, k] = DIC[i, j, k] + nut[1]
-                DIN[i, j, k] = DIN[i, j, k] + nut[2]
-                DOC[i, j, k] = DOC[i, j, k] + nut[3]
-                DON[i, j, k] = DON[i, j, k] + nut[4]
-                POC[i, j, k] = POC[i, j, k] + nut[5]
-                PON[i, j, k] = PON[i, j, k] + nut[6]
-            end
-            for k in Int(0.625*g.Nz)+1:Int(0.80*g.Nz)
+    for i in 1:g.Nx
+        for j in 1:g.Ny
+            for k in 1:g.Nz
                 DIC[i, j, k] = DIC[i, j, k] + nut[1]
                 DIN[i, j, k] = DIN[i, j, k] + nut[2]
                 DOC[i, j, k] = DOC[i, j, k] + nut[3]
