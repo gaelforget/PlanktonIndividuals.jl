@@ -5,18 +5,23 @@ respir_extra(size) = respir_ex*size^respir_b # extra cost for biosynthesis, rela
 
 β(size) = a_β*size^b_β/(1+a_β*size^b_β) # metabolic partitioning for biosynthesis, decrese with size
 
-function PAR_cal(I, z, cumsum_chl)
+function α_I_cal(I, z, cumsum_chl)
     atten = (katten_w + katten_c * cumsum_chl)*(-z)
-    PAR = α*I*(1.0 - exp(-atten))/atten
-    return PAR
+    α_I = α*I*(1.0 - exp(-atten))/atten
+    return α_I
 end
 
-function PC(PAR, Temp, phyt)  
+function PC(α_I, Temp, phyt)  
     Tempstd = exp(TempAe*(1.0/(Temp+273.15)-1.0/Tempref))
     photoTempFunc = TempCoeff*max(1.0e-10,Tempstd)
-    PCm = PCmax[phyt.sp]*phyt.size^PC_b[phyt.sp]
-    PC = PCm*photoTempFunc*(1-exp(-PAR*phyt.chl/(phyt.Cq2*PCm*photoTempFunc)))
+    PCm = PCmax[phyt.sp]*photoTempFunc*phyt.size^PC_b[phyt.sp]
+    PC = PCm*(1-exp(-α_I*phyt.chl/(phyt.Cq2*PCm)))
     PS = PC*Cquota[phyt.sp]*Nn
+    Eₖ = PCm/(phyt.chl/phyt.Cq2*α)
+    tmp = α_I/α
+    if (tmp > Eₖ) & (inhibcoef[phyt.sp] == 1.0)
+        PS = PS*Eₖ/tmp*inhibcoef[phyt.sp]
+    end
     return PS # unit: mmol C/second/individual
 end
 
@@ -95,10 +100,10 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
         P_dvi = rand(Bernoulli((a_dvi[sp]*reg_size)^b_dvi[sp]/(1+(a_dvi[sp]*reg_size)^b_dvi[sp]))) 
         reg_age = max(0.0, phyt.age - death_age)
         P_death = rand(Bernoulli(a_death*reg_age^b_death/(1+a_death*reg_age^b_death)))
-        PAR = PAR_cal(IR[trunc(Int,t*ΔT/3600)], g.zF[z], cumsum_chl[x, y, z])
-        PP = PC(PAR,temp[trunc(Int,t*ΔT/3600)],phyt)*ΔT
+        α_I = α_I_cal(IR[trunc(Int,t*ΔT/3600)], g.zF[z], cumsum_chl[x, y, z])
+        PP = PC(α_I,temp[trunc(Int,t*ΔT/3600)],phyt)*ΔT
         VN = min(DIN*g.V[x,y,z]/10.0,Nuptake(DIN,phyt)*ΔT)
-        ρ_chl = chl_sync(phyt,PC(PAR,temp[trunc(Int,t*ΔT/3600)],phyt),IR[trunc(Int,t*ΔT/3600)])
+        ρ_chl = chl_sync(phyt,PC(α_I,temp[trunc(Int,t*ΔT/3600)],phyt),IR[trunc(Int,t*ΔT/3600)])
         if P_graz == false #not grazed
             SynC = min(VN/R_NC,β(phyt.size)*k_mtb*phyt.Cq1/(1+respir_extra(phyt.size)))
             CostC = SynC*(1+respir_extra(phyt.size))
@@ -106,7 +111,7 @@ function phyt_update(t::Int64, ΔT::Int64, g, phyts_a, nutrients, IR, temp)
             dCq1 = PP - CostC - MaintenC
             dCq2 = SynC
             dNq  = VN
-            dsize= dCq2/phyt.Cq2
+            dsize= dCq2/(Cquota[phyt.sp]*Nn)
             phyt.Cq1 = max(0.0, phyt.Cq1 + dCq1)
             phyt.Cq2 = phyt.Cq2 + dCq2
             phyt.Nq  = phyt.Nq + dNq

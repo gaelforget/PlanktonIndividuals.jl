@@ -13,6 +13,7 @@
 #     language: julia
 #     name: julia-1.1
 # ---
+
 using DataFrames, NetCDF, Printf, CSV, Serialization
 using Random
 using Distributions
@@ -53,7 +54,7 @@ itvalLo = 144;
 itvalHi = 687888;
 itList = collect(itvalLo:144:itvalHi);
 tN = 4056; # starting time
-vfroot = "/nobackup1b/users/jahn/hinpac/grazsame3/run/run.0354/offline-0604/"; # directory of velocity fields
+vfroot = "/home/jahn/l/hinpac/diags/0352"; # directory of velocity fields
 
 N = 100000   # Number of initial individuals of each species
 Nsp = 2     # Number of species
@@ -62,7 +63,7 @@ B=setup_agents(N,Cquota,Nn,1.0,0.25,g) # Normal distribution with mean and varia
 # model initialization
 # create output file
 output = create_output(B);
-nut = [2.0, 0.100, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
+nut = [2.0, 0.050, 20.0, 0.0, 0.0, 0.0] #DIC, DIN, DOC, DON, POC, PON, mmol/m3
 nutrients= setup_nutrients(g,nut)
 remin = remineralization(kDOC,kDON,kPOC,kPON);
 
@@ -79,7 +80,7 @@ for t in 1:nTime
     gtr = compute_source_term(nutrients, velᵇ, g, F)
     nutₜ = nut_update(nutrients, consume, g, gtr, ΔT)
     write_nut_nc(g, nutₜ, t)
-    write_nut_cons(g, gtr, nutₜ, velᵇ, agent_num, t, death_ct, graz_ct)
+    write_nut_cons(g, gtr, nutₜ, velᵇ, agent_num, t, death_ct, graz_ct, dvid_ct)
     global nutrients = nutₜ;
 end
 
